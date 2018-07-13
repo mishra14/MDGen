@@ -7,8 +7,8 @@ namespace MDGen.Sample
 	{
 		static void Main(string[] args)
 		{
-			var src = @"C:\Users\anmishr\OneDrive - Microsoft\codes.xlsx";
-			var dest = @"C:\Users\anmishr\OneDrive - Microsoft\docs";
+			var src = @"F:\validation\demo\codes.xlsx";
+			var dest = @"F:\validation\demo\docs";
 
 			Converter.FromCSV(src, "Pack", dest);
 		}

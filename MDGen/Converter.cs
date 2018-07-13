@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ExcelInterop;
+using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace MDGen.Library
@@ -18,14 +20,75 @@ namespace MDGen.Library
 				Directory.CreateDirectory(outputPath);
 			}
 
-			var data = ExcelInterop.ExcelUtility.ReadFromExcel(sourceFilePath, worksheetName);
+			var data = ExcelUtility.ReadFromExcel(sourceFilePath, worksheetName);
 			var sectionTitles = data[0];
+
+			var header = new Header()
+			{
+				Author = "mishra14",
+				MsAuthor = "anmishr",
+				Manager = "rrelyea",
+				MsDate = "07/13/2018",
+				MsTopic = "reference",
+				MsReviewer = "anangaur"
+			};
 
 			for (var i = 1; i < data.Count; i++)
 			{
 				var row = data[i];
+				var code = string.Empty;
+				var level = string.Empty;
+				var pretext = string.Empty;
+				var sections = new List<Section>();
 
+				for (var j = 0; j < row.Count; j++)
+				{
+					var title = sectionTitles[j];
+					if (!SkipSection(title))
+					{
+						if (title.Equals("loglevel", StringComparison.OrdinalIgnoreCase))
+						{
+							level = row[j];
+						}
+						else if (title.Equals("NuGet Log Code", StringComparison.OrdinalIgnoreCase))
+						{
+							code = row[j];
+						}
+						else if (title.Equals("log message", StringComparison.OrdinalIgnoreCase))
+						{
+							pretext = row[j];
+						}
+						else
+						{
+							var section = new Section()
+							{
+								Title = title,
+								Content = row[j]
+							};
+
+							sections.Add(section);
+						}
+					}
+				}
+
+				header.Title = $"NuGet {level} {code}";
+				header.Description = $"{code} {level} code";
+				header.F1Keywords = new List<string>() { code };
+
+				var md = new MD()
+				{
+					Header = header,
+					Pretext = pretext,
+					Sections = sections
+				};
+
+				md.Save($@"{outputPath}\{code}.md", overwrite: true);
 			}
+		}
+
+		private static bool SkipSection(string title)
+		{
+			return title.StartsWith("[SKIP]", StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }
