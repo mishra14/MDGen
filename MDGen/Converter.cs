@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MDGen.Library
 {
@@ -28,7 +29,7 @@ namespace MDGen.Library
 				Author = "mishra14",
 				MsAuthor = "anmishr",
 				Manager = "rrelyea",
-				MsDate = "07/13/2018",
+				MsDate = DateTimeOffset.Now.ToString("d"),
 				MsTopic = "reference",
 				MsReviewer = "anangaur"
 			};
@@ -82,7 +83,12 @@ namespace MDGen.Library
 					Sections = sections
 				};
 
-				md.Save($@"{outputPath}\{code}.md", overwrite: true);
+				// write only the ones that description
+				if (md.Sections.Any(section => section.Title == "Issue" && !string.IsNullOrEmpty(section.Content) &&
+					md.Sections.Any(anotherSection => anotherSection.Title == "Solution" && !string.IsNullOrEmpty(anotherSection.Content))))
+				{
+					md.Save($@"{outputPath}\{code}.md", overwrite: true);
+				}
 			}
 		}
 
