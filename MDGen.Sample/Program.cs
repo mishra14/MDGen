@@ -51,7 +51,7 @@ namespace MDGen.Sample
 			var builder = new StringBuilder();
 			var group = column;
 			builder.Append($"| {group} | ");
-			mdFiles.Where(m => m.Level == level).ForEach(m => builder.Append($"[{m.Code}](./errors-and-warnings/{m.Code}.md)"));
+			mdFiles.Where(m => m.Level == level).ForEach(m => builder.Append($"[{m.Code}](./errors-and-warnings/{m.Code}.md), "));
 			return builder.ToString();
 		}
 
