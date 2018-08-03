@@ -1,4 +1,5 @@
 ﻿using ExcelInterop;
+using NuGet.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +9,7 @@ namespace MDGen.Library
 {
 	public static class Converter
 	{
-		public static void FromCSV(string sourceFilePath, string worksheetName, string outputPath)
+		public static IList<MD> FromCSV(string sourceFilePath, string worksheetName, string outputPath)
 		{
 			if (!File.Exists(sourceFilePath))
 			{
@@ -33,6 +34,8 @@ namespace MDGen.Library
 				MsTopic = "reference",
 				MsReviewer = "anangaur"
 			};
+
+			var mdFiles = new List<MD>();
 
 			for (var i = 1; i < data.Count; i++)
 			{
@@ -75,21 +78,38 @@ namespace MDGen.Library
 				header.Title = $"NuGet {level} {code}";
 				header.Description = $"{code} {level} code";
 				header.F1Keywords = new List<string>() { code };
+				Enum.TryParse(code, out NuGetLogCode logCode);
+				Enum.TryParse(level, out LogLevel logLevel);
 
 				var md = new MD()
 				{
 					Header = header,
 					Pretext = pretext,
-					Sections = sections
+					Sections = sections,
+					Code = logCode,
+					Level = logLevel
 				};
 
-				// write only the ones that description
-				if (md.Sections.Any(section => section.Title == "Issue" && !string.IsNullOrEmpty(section.Content) &&
-					md.Sections.Any(anotherSection => anotherSection.Title == "Solution" && !string.IsNullOrEmpty(anotherSection.Content))))
+				if (SaveMD(outputPath, md))
 				{
-					md.Save($@"{outputPath}\{code}.md", overwrite: true);
+					mdFiles.Add(md);
 				}
 			}
+
+			return mdFiles;
+		}
+
+		private static bool SaveMD(string outputPath, MD md)
+		{
+			// write only the ones that have description and solution sections
+			if (md.Sections.Any(section => section.Title == "Issue" && !string.IsNullOrEmpty(section.Content) &&
+				md.Sections.Any(anotherSection => anotherSection.Title == "Solution" && !string.IsNullOrEmpty(anotherSection.Content))))
+			{
+				md.Save($@"{outputPath}\{md.Code}.md", overwrite: true);
+				return true;
+			}
+
+			return false;
 		}
 
 		private static bool SkipSection(string title)

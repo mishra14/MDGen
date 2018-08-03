@@ -1,12 +1,21 @@
-﻿using System;
+﻿using NuGet.Common;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
 namespace MDGen.Library
 {
-	internal class MD
+	public class MD
 	{
+		public object code;
+
+		public LogLevel Level { get; set; }
+
+		public NuGetLogCode Code { get; set; }
+
+		public string Path { get; private set; }
+
 		public Header Header { get; set; }
 
 		public string Pretext { get; set; }
@@ -41,7 +50,8 @@ namespace MDGen.Library
 				}
 
 				File.WriteAllText(path, builder.ToString());
-			}			
+				Path = path;
+			}
 		}
 	}
 }

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace MDGen.Library
 {
-	internal class Section
+	public class Section
 	{
 		public string Title { get; set; }
 

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MDGen.Library
 {
-	internal class Header
+	public class Header
 	{
 		public string Title { get; set; }
 
