@@ -13,9 +13,10 @@ namespace MDGen.Sample
 	{
 		static void Main(string[] args)
 		{
-			var src = @"F:\validation\demo\codes.xlsx";
+			var src = @"C:\Users\anmishr\OneDrive - Microsoft\codes.xlsx";
 			var dest = @"F:\validation\demo\docs";
 			var docsDest = @"E:\docs.microsoft.com-nuget\docs\reference\errors-and-warnings";
+			var worksheetName = "Signing";
 
 			if (Directory.Exists(dest))
 			{
@@ -28,7 +29,7 @@ namespace MDGen.Sample
 			}
 
 			Console.WriteLine($"Generating new docs at {dest}");
-			var mdFiles = Converter.FromCSV(src, "Pack", dest);
+			var mdFiles = Converter.FromCSV(src, worksheetName, dest);
 
 			Console.WriteLine($"Moving new docs from {dest} to {docsDest}");
 			Directory.GetFiles(dest).ForEach(e => File.Copy(e, Path.Combine(docsDest, Path.GetFileName(e)), overwrite: true));

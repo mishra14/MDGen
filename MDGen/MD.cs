@@ -8,8 +8,6 @@ namespace MDGen.Library
 {
 	public class MD
 	{
-		public object code;
-
 		public LogLevel Level { get; set; }
 
 		public NuGetLogCode Code { get; set; }
@@ -18,28 +16,44 @@ namespace MDGen.Library
 
 		public Header Header { get; set; }
 
-		public string Pretext { get; set; }
-
-		public IList<Section> Sections { get; set; }
+		public IList<Scenario> Scenarios { get; set; }
 
 		public void Save(string path, bool overwrite = true)
 		{
-			var builder = new StringBuilder();
+			StringBuilder builder = new StringBuilder();
 			builder.AppendLine("---");
 			builder.Append(Header.ToString());
 			builder.AppendLine("---");
 			builder.AppendLine();
 			builder.AppendLine($"# {Header.Title}");
 
-			if (!string.IsNullOrEmpty(Pretext))
+			if (Scenarios != null)
 			{
-				builder.AppendLine($"<pre>{Pretext}</pre>");
+				if (Scenarios.Count < 2)
+				{
+					foreach (Scenario scenario in Scenarios)
+					{
+						builder.AppendLine();
+						builder.AppendLine(scenario.ToString());
+					}
+				}
+				else
+				{
+					for (int i = 0; i < Scenarios.Count; i++)
+					{
+						var scenario = Scenarios[i];
+						builder.AppendLine();
+						builder.AppendLine($"## Scenario {i+1}");
+						builder.AppendLine();
+						builder.AppendLine(scenario.ToString());
+					}
+				}
 			}
 
-			foreach (var section in Sections)
+			foreach (Scenario scenario in Scenarios)
 			{
 				builder.AppendLine();
-				builder.AppendLine(section.ToString());
+				builder.AppendLine(scenario.ToString());
 			}
 
 			if (builder.Length > 0)

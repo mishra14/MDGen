@@ -22,32 +22,22 @@ namespace MDGen.Library
 				Directory.CreateDirectory(outputPath);
 			}
 
-			var data = ExcelUtility.ReadFromExcel(sourceFilePath, worksheetName);
-			var sectionTitles = data[0];
+			IList<IList<string>> data = ExcelUtility.ReadFromExcel(sourceFilePath, worksheetName);
+			IList<string> sectionTitles = data[0];
+			List<MD> mdFiles = new List<MD>();
+			MD mdFile = null;
 
-			var header = new Header()
+			for (int i = 1; i < data.Count; i++)
 			{
-				Author = "mishra14",
-				MsAuthor = "anmishr",
-				Manager = "rrelyea",
-				MsDate = DateTimeOffset.Now.ToString("d"),
-				MsTopic = "reference",
-				MsReviewer = "anangaur"
-			};
+				IList<string> row = data[i];
+				string code = string.Empty;
+				string level = string.Empty;
+				string pretext = string.Empty;
+				List<Section> sections = new List<Section>();
 
-			var mdFiles = new List<MD>();
-
-			for (var i = 1; i < data.Count; i++)
-			{
-				var row = data[i];
-				var code = string.Empty;
-				var level = string.Empty;
-				var pretext = string.Empty;
-				var sections = new List<Section>();
-
-				for (var j = 0; j < row.Count; j++)
+				for (int j = 0; j < row.Count; j++)
 				{
-					var title = sectionTitles[j];
+					string title = sectionTitles[j];
 					if (!SkipSection(title))
 					{
 						if (title.Equals("loglevel", StringComparison.OrdinalIgnoreCase))
@@ -64,7 +54,7 @@ namespace MDGen.Library
 						}
 						else
 						{
-							var section = new Section()
+							Section section = new Section()
 							{
 								Title = title,
 								Content = row[j]
@@ -75,24 +65,40 @@ namespace MDGen.Library
 					}
 				}
 
-				header.Title = $"NuGet {level} {code}";
-				header.Description = $"{code} {level} code";
-				header.F1Keywords = new List<string>() { code };
 				Enum.TryParse(code, out NuGetLogCode logCode);
 				Enum.TryParse(level, out LogLevel logLevel);
 
-				var md = new MD()
+				if (logCode == NuGetLogCode.Undefined)
 				{
-					Header = header,
-					Pretext = pretext,
-					Sections = sections,
-					Code = logCode,
-					Level = logLevel
-				};
+					mdFile.Scenarios.Add(new Scenario() { Pretext = pretext, Sections = sections });
+				}
+				else
+				{
+					if (mdFile != null && SaveMD(outputPath, mdFile))
+					{
+						mdFiles.Add(mdFile);
+					}
 
-				if (SaveMD(outputPath, md))
-				{
-					mdFiles.Add(md);
+					Header header = new Header()
+					{
+						Author = "mishra14",
+						MsAuthor = "anmishr",
+						Manager = "rrelyea",
+						MsDate = DateTimeOffset.Now.ToString("d"),
+						MsTopic = "reference",
+						MsReviewer = "anangaur",
+						Title = $"NuGet {level} {code}",
+						Description = $"{code} {level} code",
+						F1Keywords = new List<string>() { code },
+					};
+
+					mdFile = new MD()
+					{
+						Header = header,
+						Scenarios = new List<Scenario>() { new Scenario() { Pretext = pretext, Sections = sections } },
+						Code = logCode,
+						Level = logLevel
+					};
 				}
 			}
 
@@ -102,8 +108,8 @@ namespace MDGen.Library
 		private static bool SaveMD(string outputPath, MD md)
 		{
 			// write only the ones that have description and solution sections
-			if (md.Sections.Any(section => section.Title == "Issue" && !string.IsNullOrEmpty(section.Content) &&
-				md.Sections.Any(anotherSection => anotherSection.Title == "Solution" && !string.IsNullOrEmpty(anotherSection.Content))))
+			if (md.Scenarios.Any(scenario => scenario.Sections.Any(s => s.Title == "Issue" && !string.IsNullOrEmpty(s.Content))) &&
+				md.Scenarios.Any(scenario => scenario.Sections.Any(s => s.Title == "Solution" && !string.IsNullOrEmpty(s.Content))))
 			{
 				md.Save($@"{outputPath}\{md.Code}.md", overwrite: true);
 				return true;
