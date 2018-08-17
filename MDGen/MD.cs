@@ -50,12 +50,6 @@ namespace MDGen.Library
 				}
 			}
 
-			foreach (Scenario scenario in Scenarios)
-			{
-				builder.AppendLine();
-				builder.AppendLine(scenario.ToString());
-			}
-
 			if (builder.Length > 0)
 			{
 				if (File.Exists(path) && !overwrite)
